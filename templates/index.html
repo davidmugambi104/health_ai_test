@@ -3,45 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disease Diagnosis System</title>
+    <title>MediScan AI - Advanced Health Intelligence Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <style>
         :root {
-            --primary: #3498db;
-            --primary-dark: #2980b9;
-            --secondary: #2ecc71;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --gray: #95a5a6;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #e63946;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --dark-bg: #0a1128;
+            --card-bg: #1a2332;
+            --text-light: #e9ecef;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+            --gradient-light: linear-gradient(135deg, #4cc9f0, #4361ee);
         }
         
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background-color: #f5f7fa;
-            color: var(--dark);
+            background-color: var(--dark-bg);
+            color: var(--text-light);
             line-height: 1.6;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
         
         header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: var(--gradient);
             color: white;
-            padding: 20px 0;
+            padding: 15px 0;
             box-shadow: var(--shadow);
-            margin-bottom: 30px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
         
         .header-content {
@@ -51,77 +64,147 @@
         }
         
         .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-size: 24px;
             font-weight: bold;
+        }
+        
+        .logo i {
+            font-size: 28px;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
         
         .nav-links a {
             color: white;
             text-decoration: none;
-            margin-left: 20px;
             font-weight: 500;
-            transition: opacity 0.3s;
+            transition: all 0.3s;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .nav-links a:hover {
-            opacity: 0.8;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-healthy {
+            background: var(--success);
+        }
+        
+        .status-unhealthy {
+            background: var(--danger);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
         
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1.5fr;
             gap: 30px;
+            margin-top: 30px;
         }
         
-        @media (max-width: 768px) {
+        @media (max-width: 1100px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
         }
         
         .card {
-            background: white;
-            border-radius: 10px;
+            background: var(--card-bg);
+            border-radius: 15px;
             box-shadow: var(--shadow);
             padding: 25px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
         
         .card h2 {
-            margin-bottom: 15px;
-            color: var(--primary-dark);
-            border-bottom: 2px solid var(--light);
+            margin-bottom: 20px;
+            color: var(--text-light);
+            border-bottom: 2px solid var(--primary);
             padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .input-section {
             display: flex;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            position: relative;
         }
         
         #symptom-input {
             flex: 1;
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px 0 0 5px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px 0 0 10px;
             font-size: 16px;
             outline: none;
-            transition: border 0.3s;
+            transition: all 0.3s;
+            color: var(--text-light);
         }
         
         #symptom-input:focus {
             border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        #symptom-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
         
         #add-symptom {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 0 20px;
-            border-radius: 0 5px 5px 0;
+            padding: 0 25px;
+            border-radius: 0 10px 10px 0;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         #add-symptom:hover {
@@ -131,18 +214,26 @@
         #symptom-list {
             list-style: none;
             margin-bottom: 20px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
         }
         
         .symptom-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
-            background: var(--light);
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.05);
             margin-bottom: 8px;
-            border-radius: 5px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        
+        .symptom-item:hover {
+            background: rgba(255, 255, 255, 0.08);
         }
         
         .remove-symptom {
@@ -150,130 +241,181 @@
             color: white;
             border: none;
             border-radius: 50%;
-            width: 25px;
-            height: 25px;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .remove-symptom:hover {
+            transform: scale(1.1);
         }
         
         .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
         
         button {
-            padding: 12px 20px;
+            padding: 15px 25px;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         #predict-btn {
-            background: var(--secondary);
+            background: var(--gradient);
             color: white;
             flex: 1;
         }
         
         #predict-btn:hover {
-            background: #27ae60;
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary));
+            transform: translateY(-2px);
         }
         
         #clear-btn {
-            background: var(--gray);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
         }
         
         #clear-btn:hover {
-            background: #7f8c8d;
+            background: rgba(255, 255, 255, 0.2);
         }
         
         .health-score {
             text-align: center;
-            padding: 15px;
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            padding: 20px;
+            background: var(--gradient-light);
             color: white;
-            border-radius: 10px;
-            margin-bottom: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(76, 201, 240, 0.3);
         }
         
         .health-score h3 {
             font-size: 18px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
+            opacity: 0.9;
         }
         
         .health-score-value {
-            font-size: 36px;
+            font-size: 48px;
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .health-score-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .health-score-fill {
+            height: 100%;
+            background: white;
+            border-radius: 4px;
+            transition: width 1s ease-in-out;
         }
         
         .disease-card {
-            background: white;
+            background: var(--card-bg);
             border-left: 5px solid var(--primary);
-            border-radius: 5px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .disease-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
         }
         
         .disease-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         
         .disease-name {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
-            color: var(--primary-dark);
+            color: var(--text-light);
         }
         
         .confidence {
             background: var(--primary);
             color: white;
-            padding: 5px 10px;
+            padding: 8px 15px;
             border-radius: 20px;
             font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .ai-confidence {
+            background: var(--accent);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
         }
         
         .symptoms-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 5px;
-            margin: 10px 0;
+            gap: 8px;
+            margin: 15px 0;
         }
         
         .symptom-tag {
-            background: var(--light);
-            padding: 3px 8px;
-            border-radius: 15px;
-            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
         }
         
         .matched {
-            background: #d4edda;
-            color: #155724;
+            background: rgba(76, 201, 240, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(76, 201, 240, 0.3);
         }
         
         .unmatched {
-            background: #f8d7da;
-            color: #721c24;
+            background: rgba(230, 57, 70, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(230, 57, 70, 0.3);
         }
         
         .description {
-            margin: 10px 0;
-            font-style: italic;
-            color: var(--dark);
+            margin: 15px 0;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
         }
         
         .precautions h4 {
-            margin: 10px 0 5px;
+            margin: 15px 0 10px;
             color: var(--warning);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .precaution-list {
@@ -281,29 +423,32 @@
         }
         
         .precaution-list li {
-            padding: 5px 0;
-            border-bottom: 1px dashed #eee;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .precaution-list li:before {
-            content: "•";
-            color: var(--warning);
-            margin-right: 5px;
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
         }
         
         .loading {
             text-align: center;
-            padding: 20px;
+            padding: 40px 20px;
         }
         
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
+            border: 4px solid rgba(255, 255, 255, 0.1);
             border-left-color: var(--primary);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 10px;
+            margin: 0 auto 20px;
         }
         
         @keyframes spin {
@@ -311,37 +456,41 @@
         }
         
         .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 15px 0;
+            background: rgba(230, 57, 70, 0.2);
+            color: var(--danger);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid var(--danger);
         }
         
         .suggestions {
-            margin-top: 10px;
+            margin-top: 15px;
         }
         
         .suggestion-item {
             display: inline-block;
-            background: #e2e3e5;
-            padding: 5px 10px;
-            margin: 5px 5px 0 0;
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            margin: 8px 8px 0 0;
+            border-radius: 20px;
             font-size: 14px;
             cursor: pointer;
+            transition: all 0.3s;
         }
         
         .suggestion-item:hover {
-            background: #d4d5d6;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
         
         footer {
             text-align: center;
-            margin-top: 40px;
-            padding: 20px;
+            margin-top: 50px;
+            padding: 30px;
             color: var(--gray);
             font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .modal {
@@ -351,67 +500,425 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(5px);
         }
         
         .modal-content {
-            background: white;
-            border-radius: 10px;
+            background: var(--card-bg);
+            border-radius: 15px;
             width: 90%;
-            max-width: 600px;
+            max-width: 800px;
             max-height: 80vh;
             overflow-y: auto;
-            padding: 25px;
+            padding: 30px;
             position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .close-modal {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 24px;
+            top: 20px;
+            right: 20px;
+            font-size: 28px;
             cursor: pointer;
             color: var(--gray);
+            transition: color 0.3s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .close-modal:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .symptoms-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-            max-height: 400px;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            max-height: 500px;
             overflow-y: auto;
+            padding: 10px;
         }
         
         .symptom-option {
-            padding: 10px;
-            background: var(--light);
-            border-radius: 5px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
         
         .symptom-option:hover {
-            background: #dde4e6;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-3px);
+            border-color: var(--primary);
         }
         
-        .api-status {
+        .enrichment-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 15px;
+            border-radius: 10px;
+        }
+        
+        .control-group label {
+            font-size: 14px;
+        }
+        
+        .switch {
+            position: relative;
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
             border-radius: 50%;
-            margin-right: 5px;
         }
         
-        .status-healthy {
-            background: var(--secondary);
+        input:checked + .slider {
+            background-color: var(--primary);
         }
         
-        .status-unhealthy {
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .enrichment-data {
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+        }
+        
+        .enrichment-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .enrichment-tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .enrichment-tab.active {
+            background: var(--primary);
+        }
+        
+        .enrichment-content {
+            display: none;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 0 10px 10px 10px;
+        }
+        
+        .enrichment-content.active {
+            display: block;
+        }
+        
+        .data-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .data-item h4 {
+            margin-bottom: 8px;
+            color: var(--success);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-top: 3px solid var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--success);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .chart-container {
+            margin: 30px 0;
+            height: 300px;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            z-index: 3000;
+            box-shadow: var(--shadow);
+            transform: translateX(150%);
+            transition: transform 0.5s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            background: var(--success);
+        }
+        
+        .notification.error {
             background: var(--danger);
+        }
+        
+        .notification.warning {
+            background: var(--warning);
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 16px;
+            outline: none;
+            color: var(--text-light);
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* New styles for enhanced features */
+        .ai-insights {
+            background: rgba(114, 9, 183, 0.1);
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .confidence-comparison {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .confidence-item {
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .confidence-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .confidence-label {
+            font-size: 12px;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+        
+        .feature-importance {
+            margin: 15px 0;
+        }
+        
+        .feature-bar {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        
+        .feature-name {
+            width: 150px;
+            font-size: 14px;
+        }
+        
+        .feature-value {
+            flex: 1;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+        
+        .feature-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .feature-percentage {
+            width: 50px;
+            text-align: right;
+            font-size: 14px;
+        }
+        
+        .similar-cases {
+            margin: 15px 0;
+        }
+        
+        .case-item {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 5px;
+            margin: 5px 0;
+            border-left: 3px solid var(--success);
+        }
+        
+        .case-similarity {
+            font-weight: bold;
+            color: var(--success);
+        }
+        
+        .meta-info {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            margin: 5px 0;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .main-content {
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .enrichment-controls {
+                flex-direction: column;
+            }
+            
+            .control-group {
+                width: 100%;
+            }
+            
+            .confidence-comparison {
+                flex-direction: column;
+            }
+            
+            .meta-info {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -419,11 +926,18 @@
     <header>
         <div class="container">
             <div class="header-content">
-                <div class="logo">Disease Diagnosis System</div>
+                <div class="logo">
+                    <i class="fas fa-stethoscope"></i>
+                    <span>MediScan AI</span>
+                </div>
                 <div class="nav-links">
-                    <a href="#" id="view-symptoms">All Symptoms</a>
-                    <a href="#" id="view-diseases">All Diseases</a>
-                    <span id="api-status-indicator"><span class="api-status status-unhealthy"></span>API</span>
+                    <a href="#" id="view-symptoms"><i class="fas fa-list"></i> All Symptoms</a>
+                    <a href="#" id="view-diseases"><i class="fas fa-disease"></i> All Diseases</a>
+                    <a href="#" id="view-stats"><i class="fas fa-chart-bar"></i> Analytics</a>
+                    <div class="api-status">
+                        <span class="status-indicator status-unhealthy"></span>
+                        <span id="api-status-text">API Connecting...</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -433,28 +947,62 @@
         <div class="main-content">
             <div class="input-column">
                 <div class="card">
-                    <h2>Enter Your Symptoms</h2>
+                    <h2><i class="fas fa-diagnoses"></i> Symptom Analysis</h2>
+                    
+                    <div class="enrichment-controls">
+                        <div class="control-group">
+                            <label for="enable-enrichment">Data Enrichment</label>
+                            <label class="switch">
+                                <input type="checkbox" id="enable-enrichment" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <label for="enable-ai-reranking">AI Reranking</label>
+                            <label class="switch">
+                                <input type="checkbox" id="enable-ai-reranking" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <label for="location-input"><i class="fas fa-map-marker-alt"></i> Location</label>
+                            <input type="text" id="location-input" placeholder="Optional" style="background: transparent; border: none; color: white; width: 120px;">
+                        </div>
+                    </div>
+                    
                     <div class="input-section">
-                        <input type="text" id="symptom-input" placeholder="Type a symptom (e.g., headache, fever)">
-                        <button id="add-symptom">Add</button>
+                        <input type="text" id="symptom-input" placeholder="Type a symptom (e.g., fever, cough)">
+                        <button id="add-symptom"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                    
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="symptom-search" placeholder="Search symptoms...">
                     </div>
                     
                     <ul id="symptom-list"></ul>
                     
                     <div class="action-buttons">
-                        <button id="clear-btn">Clear All</button>
-                        <button id="predict-btn">Predict Disease</button>
+                        <button id="clear-btn"><i class="fas fa-trash"></i> Clear All</button>
+                        <button id="predict-btn"><i class="fas fa-brain"></i> Analyze Symptoms</button>
                     </div>
                 </div>
                 
                 <div class="card">
-                    <h2>How It Works</h2>
-                    <p>This system uses advanced matching algorithms to compare your symptoms with a comprehensive medical database.</p>
-                    <ul>
-                        <li>Enter at least 1 symptom (up to 10)</li>
-                        <li>Click "Predict Disease" to get results</li>
-                        <li>Results show diseases ranked by confidence</li>
-                        <li>Each result includes matched symptoms and precautions</li>
+                    <h2><i class="fas fa-chart-line"></i> System Status</h2>
+                    <div id="analytics-container">
+                        <p>System analytics will appear here after analysis.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2><i class="fas fa-info-circle"></i> How It Works</h2>
+                    <p>MediScan AI uses advanced machine learning and multi-source data integration for accurate health assessments.</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Enter symptoms to get AI-powered disease predictions</li>
+                        <li>Enable data enrichment for detailed medical insights</li>
+                        <li>AI reranking improves prediction accuracy</li>
+                        <li>Get ICD-11 classifications, clinical trials, and more</li>
                     </ul>
                 </div>
             </div>
@@ -462,8 +1010,11 @@
             <div class="results-column">
                 <div id="results-container">
                     <div class="card">
-                        <h2>Prediction Results</h2>
-                        <p id="initial-message">Enter symptoms and click "Predict Disease" to see results.</p>
+                        <h2><i class="fas fa-clipboard-list"></i> Analysis Results</h2>
+                        <div id="initial-message" class="empty-state">
+                            <i class="fas fa-stethoscope"></i>
+                            <p>Enter symptoms and click "Analyze Symptoms" to see results.</p>
+                        </div>
                         <div id="results-content"></div>
                     </div>
                 </div>
@@ -475,8 +1026,12 @@
     <div class="modal" id="symptoms-modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h2>All Symptoms</h2>
+            <h2><i class="fas fa-list-medical"></i> All Symptoms</h2>
             <p>Click on a symptom to add it to your list.</p>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="modal-symptom-search" placeholder="Search symptoms...">
+            </div>
             <div class="symptoms-grid" id="symptoms-grid"></div>
         </div>
     </div>
@@ -485,19 +1040,58 @@
     <div class="modal" id="diseases-modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            <h2>All Diseases</h2>
+            <h2><i class="fas fa-disease"></i> All Diseases</h2>
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="modal-disease-search" placeholder="Search diseases...">
+            </div>
             <div id="diseases-list"></div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div class="modal" id="analytics-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fas fa-chart-bar"></i> System Analytics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <i class="fas fa-disease" style="font-size: 24px; color: var(--primary);"></i>
+                    <div class="stat-value" id="total-diseases">0</div>
+                    <div class="stat-label">Diseases in Database</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-syringe" style="font-size: 24px; color: var(--success);"></i>
+                    <div class="stat-value" id="total-symptoms">0</div>
+                    <div class="stat-label">Symptoms Tracked</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-database" style="font-size: 24px; color: var(--warning);"></i>
+                    <div class="stat-value" id="api-requests">0</div>
+                    <div class="stat-label">API Requests Today</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-users" style="font-size: 24px; color: var(--accent);"></i>
+                    <div class="stat-value" id="user-sessions">0</div>
+                    <div class="stat-label">Active Sessions</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="symptoms-chart"></canvas>
+            </div>
         </div>
     </div>
 
     <footer>
         <div class="container">
-            <p>Disease Diagnosis System &copy; 2023. This tool is for informational purposes only. Consult a healthcare professional for medical advice.</p>
+            <p>MediScan AI &copy; 2023. Advanced Health Intelligence Platform. This tool is for informational purposes only. Consult a healthcare professional for medical advice.</p>
         </div>
     </footer>
 
+    <div id="notification" class="notification"></div>
+
     <script>
-        // API Configuration
+        // API Configuration - Updated to match your backend
         const API_BASE_URL = 'http://localhost:5000';
         
         // DOM Elements
@@ -510,22 +1104,40 @@
         const initialMessage = document.getElementById('initial-message');
         const viewSymptomsBtn = document.getElementById('view-symptoms');
         const viewDiseasesBtn = document.getElementById('view-diseases');
+        const viewStatsBtn = document.getElementById('view-stats');
         const symptomsModal = document.getElementById('symptoms-modal');
         const diseasesModal = document.getElementById('diseases-modal');
+        const analyticsModal = document.getElementById('analytics-modal');
         const symptomsGrid = document.getElementById('symptoms-grid');
         const diseasesList = document.getElementById('diseases-list');
-        const apiStatusIndicator = document.getElementById('api-status-indicator');
+        const apiStatusIndicator = document.querySelector('.status-indicator');
+        const apiStatusText = document.getElementById('api-status-text');
+        const enableEnrichment = document.getElementById('enable-enrichment');
+        const enableAiReranking = document.getElementById('enable-ai-reranking');
+        const locationInput = document.getElementById('location-input');
+        const symptomSearch = document.getElementById('symptom-search');
+        const modalSymptomSearch = document.getElementById('modal-symptom-search');
+        const modalDiseaseSearch = document.getElementById('modal-disease-search');
+        const analyticsContainer = document.getElementById('analytics-container');
+        const notification = document.getElementById('notification');
         
         // State
         let userSymptoms = [];
         let allSymptoms = [];
         let allDiseases = [];
+        let analyticsData = {
+            totalDiseases: 0,
+            totalSymptoms: 0,
+            apiRequests: 0,
+            userSessions: Math.floor(Math.random() * 100) + 50
+        };
         
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             checkAPIStatus();
             loadAllSymptoms();
             loadAllDiseases();
+            updateAnalytics();
             
             // Event listeners
             addSymptomBtn.addEventListener('click', addSymptom);
@@ -544,11 +1156,16 @@
                 showDiseasesModal();
             });
             
+            viewStatsBtn.addEventListener('click', function() {
+                showAnalyticsModal();
+            });
+            
             // Close modals when clicking the X
             document.querySelectorAll('.close-modal').forEach(closeBtn => {
                 closeBtn.addEventListener('click', function() {
                     symptomsModal.style.display = 'none';
                     diseasesModal.style.display = 'none';
+                    analyticsModal.style.display = 'none';
                 });
             });
             
@@ -556,8 +1173,28 @@
             window.addEventListener('click', function(e) {
                 if (e.target === symptomsModal) symptomsModal.style.display = 'none';
                 if (e.target === diseasesModal) diseasesModal.style.display = 'none';
+                if (e.target === analyticsModal) analyticsModal.style.display = 'none';
             });
+            
+            // Search functionality
+            symptomSearch.addEventListener('input', filterSymptoms);
+            modalSymptomSearch.addEventListener('input', filterModalSymptoms);
+            modalDiseaseSearch.addEventListener('input', filterModalDiseases);
+            
+            // Initialize symptom list
+            updateSymptomList();
         });
+        
+        // Show notification
+        function showNotification(message, type = 'success') {
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
         
         // Check if API is running
         async function checkAPIStatus() {
@@ -565,23 +1202,30 @@
                 const response = await fetch(`${API_BASE_URL}/health`);
                 if (response.ok) {
                     const data = await response.json();
-                    apiStatusIndicator.innerHTML = '<span class="api-status status-healthy"></span>API Healthy';
+                    apiStatusIndicator.className = 'status-indicator status-healthy';
+                    apiStatusText.textContent = 'API Healthy';
+                    analyticsData.apiRequests++;
+                    updateAnalytics();
                 } else {
                     throw new Error('API not responding correctly');
                 }
             } catch (error) {
-                apiStatusIndicator.innerHTML = '<span class="api-status status-unhealthy"></span>API Unavailable';
+                apiStatusIndicator.className = 'status-indicator status-unhealthy';
+                apiStatusText.textContent = 'API Unavailable';
                 console.error('API health check failed:', error);
             }
         }
         
-        // Load all symptoms from API
+        // Load all symptoms from API - Updated endpoint
         async function loadAllSymptoms() {
             try {
                 const response = await fetch(`${API_BASE_URL}/symptoms`);
                 if (response.ok) {
                     const data = await response.json();
                     allSymptoms = data.data;
+                    analyticsData.totalSymptoms = allSymptoms.length;
+                    analyticsData.apiRequests++;
+                    updateAnalytics();
                 } else {
                     throw new Error('Failed to load symptoms');
                 }
@@ -589,20 +1233,25 @@
                 console.error('Error loading symptoms:', error);
                 // Fallback to a basic list if API fails
                 allSymptoms = [
-                    "Headache", "Fever", "Cough", "Fatigue", "Nausea",
-                    "Dizziness", "Chest Pain", "Shortness of Breath", "Abdominal Pain",
-                    "Joint Pain", "Muscle Aches", "Sore Throat", "Runny Nose", "Sneezing"
+                    "fever", "cough", "headache", "fatigue", "nausea",
+                    "chest pain", "shortness of breath", "dizziness", "rash",
+                    "abdominal pain", "vomiting", "diarrhea", "constipation"
                 ];
+                analyticsData.totalSymptoms = allSymptoms.length;
+                updateAnalytics();
             }
         }
         
-        // Load all diseases from API
+        // Load all diseases from API - Updated endpoint
         async function loadAllDiseases() {
             try {
                 const response = await fetch(`${API_BASE_URL}/diseases`);
                 if (response.ok) {
                     const data = await response.json();
                     allDiseases = data.data;
+                    analyticsData.totalDiseases = allDiseases.length;
+                    analyticsData.apiRequests++;
+                    updateAnalytics();
                 } else {
                     throw new Error('Failed to load diseases');
                 }
@@ -611,12 +1260,38 @@
             }
         }
         
+        // Update analytics display
+        function updateAnalytics() {
+            document.getElementById('total-diseases').textContent = analyticsData.totalDiseases;
+            document.getElementById('total-symptoms').textContent = analyticsData.totalSymptoms;
+            document.getElementById('api-requests').textContent = analyticsData.apiRequests;
+            document.getElementById('user-sessions').textContent = analyticsData.userSessions;
+            
+            // Update analytics in the sidebar
+            analyticsContainer.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${analyticsData.totalDiseases}</div>
+                        <div class="stat-label">Diseases</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${analyticsData.totalSymptoms}</div>
+                        <div class="stat-label">Symptoms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${analyticsData.apiRequests}</div>
+                        <div class="stat-label">API Calls</div>
+                    </div>
+                </div>
+            `;
+        }
+        
         // Add symptom to the list
         function addSymptom() {
             const symptom = symptomInput.value.trim();
             if (symptom && !userSymptoms.includes(symptom)) {
                 if (userSymptoms.length >= 10) {
-                    alert('Maximum 10 symptoms allowed');
+                    showNotification('Maximum 10 symptoms allowed', 'warning');
                     return;
                 }
                 
@@ -624,24 +1299,33 @@
                 updateSymptomList();
                 symptomInput.value = '';
                 symptomInput.focus();
+                showNotification(`Added symptom: ${symptom}`);
             }
         }
         
         // Remove symptom from the list
         function removeSymptom(index) {
+            const removedSymptom = userSymptoms[index];
             userSymptoms.splice(index, 1);
             updateSymptomList();
+            showNotification(`Removed symptom: ${removedSymptom}`, 'warning');
         }
         
         // Update the displayed symptom list
         function updateSymptomList() {
             symptomList.innerHTML = '';
+            
+            if (userSymptoms.length === 0) {
+                symptomList.innerHTML = '<div class="empty-state"><i class="fas fa-plus-circle"></i><p>No symptoms added yet</p></div>';
+                return;
+            }
+            
             userSymptoms.forEach((symptom, index) => {
                 const li = document.createElement('li');
                 li.className = 'symptom-item';
                 li.innerHTML = `
                     <span>${symptom}</span>
-                    <button class="remove-symptom" data-index="${index}">×</button>
+                    <button class="remove-symptom" data-index="${index}"><i class="fas fa-times"></i></button>
                 `;
                 symptomList.appendChild(li);
             });
@@ -655,11 +1339,59 @@
             });
         }
         
+        // Filter symptoms in the main view
+        function filterSymptoms() {
+            const searchTerm = symptomSearch.value.toLowerCase();
+            const symptomItems = document.querySelectorAll('.symptom-item');
+            
+            symptomItems.forEach(item => {
+                const symptomText = item.querySelector('span').textContent.toLowerCase();
+                if (symptomText.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        
+        // Filter symptoms in the modal
+        function filterModalSymptoms() {
+            const searchTerm = modalSymptomSearch.value.toLowerCase();
+            const symptomOptions = document.querySelectorAll('#symptoms-modal .symptom-option');
+            
+            symptomOptions.forEach(option => {
+                const symptomText = option.textContent.toLowerCase();
+                if (symptomText.includes(searchTerm)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+        
+        // Filter diseases in the modal
+        function filterModalDiseases() {
+            const searchTerm = modalDiseaseSearch.value.toLowerCase();
+            const diseaseOptions = document.querySelectorAll('#diseases-modal .symptom-option');
+            
+            diseaseOptions.forEach(option => {
+                const diseaseText = option.textContent.toLowerCase();
+                if (diseaseText.includes(searchTerm)) {
+                    option.style.display = 'block';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        }
+        
         // Clear all symptoms
         function clearSymptoms() {
-            userSymptoms = [];
-            updateSymptomList();
-            showInitialMessage();
+            if (userSymptoms.length > 0) {
+                userSymptoms = [];
+                updateSymptomList();
+                showInitialMessage();
+                showNotification('All symptoms cleared', 'warning');
+            }
         }
         
         // Show the initial message in results area
@@ -673,10 +1405,10 @@
             initialMessage.style.display = 'none';
         }
         
-        // Predict diseases based on symptoms
+        // Predict diseases based on symptoms - Updated to match new API
         async function predictDiseases() {
             if (userSymptoms.length === 0) {
-                alert('Please enter at least one symptom');
+                showNotification('Please enter at least one symptom', 'error');
                 return;
             }
             
@@ -684,53 +1416,94 @@
             resultsContent.innerHTML = `
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>Analyzing symptoms...</p>
+                    <p>Analyzing symptoms with AI...</p>
                 </div>
             `;
             
             try {
+                const requestBody = {
+                    symptoms: userSymptoms,
+                    location: locationInput.value.trim() || null,
+                    enable_enrichment: enableEnrichment.checked,
+                    enable_ai_reranking: enableAiReranking.checked
+                };
+                
                 const response = await fetch(`${API_BASE_URL}/predict`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ symptoms: userSymptoms })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 const data = await response.json();
+                analyticsData.apiRequests++;
+                updateAnalytics();
                 
                 if (data.success) {
-                    displayResults(data.data);
+                    displayResults(data.data, data.meta);
+                    showNotification(`Analysis complete: ${data.meta.predictions_found} conditions found`);
                 } else {
                     displayError(data.error, data.suggestions);
+                    showNotification('Analysis failed: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Prediction error:', error);
                 displayError('Failed to connect to the prediction service. Please try again later.');
+                showNotification('Connection error. Please try again.', 'error');
             }
         }
         
-        // Display prediction results
-        function displayResults(data) {
+        // Display prediction results - Updated for new response format
+        function displayResults(data, meta) {
             let html = `
                 <div class="health-score">
-                    <h3>Health Score</h3>
+                    <h3>Overall Health Score</h3>
                     <div class="health-score-value">${data.health_score}</div>
-                    <p>Based on symptom severity analysis</p>
+                    <div class="health-score-bar">
+                        <div class="health-score-fill" style="width: ${data.health_score}%"></div>
+                    </div>
+                    <p>Based on analysis of ${data.input_symptoms.length} symptoms</p>
+                </div>
+                
+                <div class="meta-info">
+                    <div class="meta-item">
+                        <i class="fas fa-database"></i> 
+                        Data Enrichment: ${data.data_enrichment_enabled ? 'Enabled' : 'Disabled'}
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-robot"></i> 
+                        AI Reranking: ${data.ai_reranking_enabled ? 'Enabled' : 'Disabled'}
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-clock"></i> 
+                        Response Time: ${new Date(meta.response_timestamp).toLocaleTimeString()}
+                    </div>
                 </div>
             `;
             
             if (data.predictions.length === 0) {
-                html += `<p>No diseases matched your symptoms with sufficient confidence.</p>`;
+                html += `<div class="empty-state"><i class="fas fa-search"></i><p>No diseases matched your symptoms with sufficient confidence.</p></div>`;
             } else {
-                html += `<h3>Possible Conditions (${data.predictions.length} found)</h3>`;
+                html += `<h3 style="margin-bottom: 20px;">Possible Conditions (${data.predictions.length} found)</h3>`;
                 
                 data.predictions.forEach(prediction => {
                     html += `
                         <div class="disease-card">
                             <div class="disease-header">
                                 <div class="disease-name">${prediction.disease}</div>
-                                <div class="confidence">${prediction.confidence}% match</div>
+                                <div class="confidence-comparison">
+                                    <div class="confidence-item">
+                                        <div class="confidence-label">Base Confidence</div>
+                                        <div class="confidence-value">${prediction.confidence}%</div>
+                                    </div>
+                                    ${prediction.ai_confidence ? `
+                                    <div class="confidence-item">
+                                        <div class="confidence-label">AI Confidence</div>
+                                        <div class="confidence-value">${prediction.ai_confidence}%</div>
+                                    </div>
+                                    ` : ''}
+                                </div>
                             </div>
                             
                             <div class="symptoms-list">
@@ -740,7 +1513,7 @@
                                 ).join('')}
                             </div>
                             
-                            ${prediction.unmatched_symptoms.length > 0 ? `
+                            ${prediction.unmatched_symptoms && prediction.unmatched_symptoms.length > 0 ? `
                                 <div class="symptoms-list">
                                     <strong>Other Symptoms of this Disease:</strong>
                                     ${prediction.unmatched_symptoms.map(s => 
@@ -753,37 +1526,226 @@
                                 ${prediction.description}
                             </div>
                             
-                            <div class="precautions">
-                                <h4>Recommended Precautions:</h4>
-                                <ul class="precaution-list">
-                                    ${prediction.precautions.map(p => `<li>${p}</li>`).join('')}
-                                </ul>
-                            </div>
-                        </div>
+                            ${prediction.precautions && prediction.precautions.length > 0 ? `
+                                <div class="precautions">
+                                    <h4><i class="fas fa-shield-alt"></i> Recommended Precautions:</h4>
+                                    <ul class="precaution-list">
+                                        ${prediction.precautions.map(p => `<li>${p}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
                     `;
+                    
+                    // Display AI insights if available
+                    if (prediction.ai_insights) {
+                        html += `
+                            <div class="ai-insights">
+                                <h4><i class="fas fa-robot"></i> AI Insights</h4>
+                                
+                                ${prediction.ai_insights.feature_importance ? `
+                                    <div class="feature-importance">
+                                        <h5>Symptom Importance:</h5>
+                                        ${Object.entries(prediction.ai_insights.feature_importance)
+                                            .sort((a, b) => b[1] - a[1])
+                                            .slice(0, 5)
+                                            .map(([symptom, importance]) => `
+                                                <div class="feature-bar">
+                                                    <div class="feature-name">${symptom.replace('_', ' ').title()}</div>
+                                                    <div class="feature-value">
+                                                        <div class="feature-fill" style="width: ${importance * 100}%"></div>
+                                                    </div>
+                                                    <div class="feature-percentage">${Math.round(importance * 100)}%</div>
+                                                </div>
+                                            `).join('')}
+                                    </div>
+                                ` : ''}
+                                
+                                ${prediction.ai_insights.similar_cases && prediction.ai_insights.similar_cases.length > 0 ? `
+                                    <div class="similar-cases">
+                                        <h5>Similar Historical Cases:</h5>
+                                        ${prediction.ai_insights.similar_cases.map(caseItem => `
+                                            <div class="case-item">
+                                                <strong>Case ${caseItem.case_id}:</strong> 
+                                                <span class="case-similarity">${(caseItem.similarity * 100).toFixed(1)}% similar</span><br>
+                                                Matched symptoms: ${caseItem.matched_symptoms.join(', ')}<br>
+                                                Outcome: ${caseItem.outcome}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                
+                                ${prediction.ai_insights.adjustment_factors ? `
+                                    <div class="meta-info">
+                                        <strong>AI Adjustment Factors:</strong><br>
+                                        ${Object.entries(prediction.ai_insights.adjustment_factors)
+                                            .map(([factor, value]) => `${factor}: ${value}`)
+                                            .join(' | ')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    // Display external data if available
+                    if (prediction.external_data && data.data_enrichment_enabled) {
+                        html += `
+                            <div class="enrichment-data">
+                                <h4><i class="fas fa-database"></i> Enriched Medical Data</h4>
+                                <div class="enrichment-tabs">
+                                    <div class="enrichment-tab active" data-tab="icd11">ICD-11</div>
+                                    <div class="enrichment-tab" data-tab="trials">Clinical Trials</div>
+                                    <div class="enrichment-tab" data-tab="drugs">Drug Interactions</div>
+                                    <div class="enrichment-tab" data-tab="genetics">Genetics</div>
+                                    <div class="enrichment-tab" data-tab="environment">Environment</div>
+                                    <div class="enrichment-tab" data-tab="patient">Patient Insights</div>
+                                </div>
+                                
+                                <div class="enrichment-content active" id="icd11-${prediction.disease.replace(/\s+/g, '-')}">
+                                    ${prediction.external_data.icd11_classification ? 
+                                        `<div class="data-item">
+                                            <h4>ICD-11 Classification</h4>
+                                            <p><strong>Code:</strong> ${prediction.external_data.icd11_classification.icd11_code}</p>
+                                            <p><strong>Category:</strong> ${prediction.external_data.icd11_classification.category}</p>
+                                            <p><strong>Definition:</strong> ${prediction.external_data.icd11_classification.definition}</p>
+                                        </div>` 
+                                        : '<p>No ICD-11 data available</p>'
+                                    }
+                                </div>
+                                
+                                <div class="enrichment-content" id="trials-${prediction.disease.replace(/\s+/g, '-')}">
+                                    ${prediction.external_data.clinical_trials && prediction.external_data.clinical_trials.length > 0 ? 
+                                        prediction.external_data.clinical_trials.map(trial => `
+                                            <div class="data-item">
+                                                <h4>${trial.title}</h4>
+                                                <p><strong>Status:</strong> ${trial.status} | <strong>Phase:</strong> ${trial.phase}</p>
+                                                <p><strong>Sponsor:</strong> ${trial.sponsor}</p>
+                                                <p>${trial.brief_summary}</p>
+                                            </div>
+                                        `).join('') 
+                                        : '<p>No clinical trials data available</p>'
+                                    }
+                                </div>
+                                
+                                <div class="enrichment-content" id="drugs-${prediction.disease.replace(/\s+/g, '-')}">
+                                    ${prediction.external_data.drug_interactions && prediction.external_data.drug_interactions.length > 0 ? 
+                                        prediction.external_data.drug_interactions.map(drug => `
+                                            <div class="data-item">
+                                                <h4>${drug.name}</h4>
+                                                <p><strong>Type:</strong> ${drug.type}</p>
+                                                <p><strong>Indications:</strong> ${drug.indications.join(', ')}</p>
+                                                <p>${drug.mechanism_of_action}</p>
+                                            </div>
+                                        `).join('') 
+                                        : '<p>No drug interactions data available</p>'
+                                    }
+                                </div>
+                                
+                                <div class="enrichment-content" id="genetics-${prediction.disease.replace(/\s+/g, '-')}">
+                                    ${prediction.external_data.genetic_markers && prediction.external_data.genetic_markers.length > 0 ? 
+                                        prediction.external_data.genetic_markers.map(marker => `
+                                            <div class="data-item">
+                                                <h4>${marker.gene} (${marker.rs_id})</h4>
+                                                <p><strong>Chromosome:</strong> ${marker.chromosome}</p>
+                                                <p><strong>Risk Allele:</strong> ${marker.risk_allele}</p>
+                                                <p><strong>Odds Ratio:</strong> ${marker.odds_ratio}</p>
+                                            </div>
+                                        `).join('') 
+                                        : '<p>No genetic markers data available</p>'
+                                    }
+                                </div>
+                                
+                                <div class="enrichment-content" id="environment-${prediction.disease.replace(/\s+/g, '-')}">
+                                    ${prediction.external_data.environmental_factors ? 
+                                        `<div class="data-item">
+                                            <h4>Environmental Factors</h4>
+                                            <p><strong>Location:</strong> ${prediction.external_data.environmental_factors.location}</p>
+                                            <p><strong>Air Quality:</strong> ${prediction.external_data.environmental_factors.air_quality_index}</p>
+                                            <p><strong>Recommendations:</strong> ${prediction.external_data.environmental_factors.recommendations.join(', ')}</p>
+                                        </div>` 
+                                        : '<p>No environmental factors data available</p>'
+                                    }
+                                </div>
+                                
+                                <div class="enrichment-content" id="patient-${prediction.disease.replace(/\s+/g, '-')}">
+                                    ${prediction.external_data.patient_insights && prediction.external_data.patient_insights.length > 0 ? 
+                                        prediction.external_data.patient_insights.map(insight => `
+                                            <div class="data-item">
+                                                <h4>${insight.source}</h4>
+                                                <p><strong>Sentiment:</strong> ${insight.sentiment}</p>
+                                                <p>${insight.content}</p>
+                                                <p><strong>Themes:</strong> ${insight.common_themes.join(', ')}</p>
+                                            </div>
+                                        `).join('') 
+                                        : '<p>No patient insights data available</p>'
+                                    }
+                                </div>
+                            </div>
+                            
+                            <script>
+                                // Tab functionality for each disease card
+                                document.querySelectorAll('#${prediction.disease.replace(/\s+/g, '-')} .enrichment-tab').forEach(tab => {
+                                    tab.addEventListener('click', function() {
+                                        const tabName = this.getAttribute('data-tab');
+                                        const parent = this.closest('.enrichment-data');
+                                        
+                                        // Deactivate all tabs
+                                        parent.querySelectorAll('.enrichment-tab').forEach(t => t.classList.remove('active'));
+                                        parent.querySelectorAll('.enrichment-content').forEach(c => c.classList.remove('active'));
+                                        
+                                        // Activate current tab
+                                        this.classList.add('active');
+                                        document.getElementById(tabName + '-${prediction.disease.replace(/\s+/g, '-')}').classList.add('active');
+                                    });
+                                });
+                            <\/script>
+                        `;
+                    }
+                    
+                    html += `</div>`;
                 });
             }
             
             html += `
-                <div class="recommendation">
-                    <p><strong>Important:</strong> ${data.recommendation}</p>
+                <div class="recommendation" style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+                    <p><strong><i class="fas fa-exclamation-triangle"></i> Important:</strong> ${data.recommendation}</p>
                 </div>
             `;
             
             resultsContent.innerHTML = html;
+            
+            // Initialize tab functionality
+            initializeEnrichmentTabs();
+        }
+        
+        // Initialize enrichment tabs
+        function initializeEnrichmentTabs() {
+            document.querySelectorAll('.enrichment-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    const parent = this.closest('.enrichment-data');
+                    
+                    // Deactivate all tabs
+                    parent.querySelectorAll('.enrichment-tab').forEach(t => t.classList.remove('active'));
+                    parent.querySelectorAll('.enrichment-content').forEach(c => c.classList.remove('active'));
+                    
+                    // Activate current tab
+                    this.classList.add('active');
+                    parent.querySelector(`#${tabName}-${this.closest('.disease-card').querySelector('.disease-name').textContent.replace(/\s+/g, '-')}`).classList.add('active');
+                });
+            });
         }
         
         // Display error message
         function displayError(error, suggestions = null) {
-            let html = `<div class="error">${error}</div>`;
+            let html = `<div class="error"><i class="fas fa-exclamation-circle"></i> ${error}</div>`;
             
             if (suggestions) {
                 html += `<div class="suggestions">
                     <p>Did you mean:</p>`;
                 
                 for (const [symptom, suggested] of Object.entries(suggestions)) {
-                    html += `<div>
-                        <strong>Instead of "${symptom}":</strong>
+                    html += `<div style="margin-bottom: 10px;">
+                        <strong>Instead of "${symptom}":</strong><br>
                         ${suggested.map(s => 
                             `<span class="suggestion-item" data-symptom="${s}">${s}</span>`
                         ).join(' ')}
@@ -812,38 +1774,116 @@
         function showSymptomsModal() {
             symptomsGrid.innerHTML = '';
             
-            allSymptoms.forEach(symptom => {
-                const div = document.createElement('div');
-                div.className = 'symptom-option';
-                div.textContent = symptom;
-                div.addEventListener('click', function() {
-                    if (!userSymptoms.includes(symptom) && userSymptoms.length < 10) {
-                        userSymptoms.push(symptom);
-                        updateSymptomList();
-                        symptomsModal.style.display = 'none';
-                    } else if (userSymptoms.length >= 10) {
-                        alert('Maximum 10 symptoms allowed');
-                    }
+            if (allSymptoms.length === 0) {
+                symptomsGrid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>No symptoms loaded</p></div>';
+            } else {
+                allSymptoms.forEach(symptom => {
+                    const div = document.createElement('div');
+                    div.className = 'symptom-option';
+                    div.textContent = symptom;
+                    div.addEventListener('click', function() {
+                        if (!userSymptoms.includes(symptom) && userSymptoms.length < 10) {
+                            userSymptoms.push(symptom);
+                            updateSymptomList();
+                            symptomsModal.style.display = 'none';
+                            showNotification(`Added symptom: ${symptom}`);
+                        } else if (userSymptoms.length >= 10) {
+                            showNotification('Maximum 10 symptoms allowed', 'warning');
+                        }
+                    });
+                    symptomsGrid.appendChild(div);
                 });
-                symptomsGrid.appendChild(div);
-            });
+            }
             
             symptomsModal.style.display = 'flex';
+            modalSymptomSearch.value = '';
+            filterModalSymptoms();
         }
         
         // Show diseases modal
         function showDiseasesModal() {
             diseasesList.innerHTML = '<div class="symptoms-grid">';
             
-            allDiseases.forEach(disease => {
-                const div = document.createElement('div');
-                div.className = 'symptom-option';
-                div.textContent = disease;
-                diseasesList.querySelector('.symptoms-grid').appendChild(div);
-            });
+            if (allDiseases.length === 0) {
+                diseasesList.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>No diseases loaded</p></div>';
+            } else {
+                allDiseases.forEach(disease => {
+                    const div = document.createElement('div');
+                    div.className = 'symptom-option';
+                    div.textContent = disease;
+                    diseasesList.querySelector('.symptoms-grid').appendChild(div);
+                });
+            }
             
             diseasesList.innerHTML += '</div>';
             diseasesModal.style.display = 'flex';
+            modalDiseaseSearch.value = '';
+            filterModalDiseases();
+        }
+        
+        // Show analytics modal
+        function showAnalyticsModal() {
+            // Create sample chart data
+            const ctx = document.getElementById('symptoms-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cardiovascular', 'Respiratory', 'Neurological', 'Digestive', 'Musculoskeletal', 'Other'],
+                    datasets: [{
+                        label: 'Symptom Frequency',
+                        data: [12, 19, 8, 15, 10, 7],
+                        backgroundColor: [
+                            'rgba(67, 97, 238, 0.7)',
+                            'rgba(76, 201, 240, 0.7)',
+                            'rgba(114, 9, 183, 0.7)',
+                            'rgba(247, 37, 133, 0.7)',
+                            'rgba(248, 150, 30, 0.7)',
+                            'rgba(230, 57, 70, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(67, 97, 238, 1)',
+                            'rgba(76, 201, 240, 1)',
+                            'rgba(114, 9, 183, 1)',
+                            'rgba(247, 37, 133, 1)',
+                            'rgba(248, 150, 30, 1)',
+                            'rgba(230, 57, 70, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            analyticsModal.style.display = 'flex';
         }
     </script>
 </body>

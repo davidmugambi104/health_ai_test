@@ -1,0 +1,9 @@
+{"timestamp": "2025-09-25 21:29:33,709", "service": "uvicorn.error", "level": "INFO", "message": "Started server process [40017]", "module": "server", "line": "76"}
+{"timestamp": "2025-09-25 21:29:33,709", "service": "uvicorn.error", "level": "INFO", "message": "Waiting for application startup.", "module": "on", "line": "46"}
+{"timestamp": "2025-09-25 21:29:33,710", "service": "medical-ai-backend", "level": "INFO", "message": "Initializing Medical AI System...", "module": "app", "line": "2015"}
+{"timestamp": "2025-09-25 21:29:33,710", "service": "medical-ai-backend", "level": "INFO", "message": "Using CPU backend", "module": "app", "line": "1180"}
+{"timestamp": "2025-09-25 21:29:33,710", "service": "medical-ai-backend", "level": "INFO", "message": "Device manager initialized on cpu", "module": "app", "line": "1167"}
+{"timestamp": "2025-09-25 21:29:33,711", "service": "medical-ai-backend", "level": "INFO", "message": "Using CPU backend", "module": "app", "line": "1180"}
+{"timestamp": "2025-09-25 21:29:33,711", "service": "medical-ai-backend", "level": "INFO", "message": "Device manager initialized on cpu", "module": "app", "line": "1167"}
+{"timestamp": "2025-09-25 21:29:33,713", "service": "medical-ai-backend", "level": "INFO", "message": "Redis cluster connection established", "module": "app", "line": "1257"}
+{"timestamp": "2025-09-25 21:29:33,713", "service": "medical-ai-backend", "level": "INFO", "message": "Loading BERT model: microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext", "module": "app", "line": "1328"}
